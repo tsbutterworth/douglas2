@@ -1,0 +1,101 @@
+{
+  "name": "Douglas Dialog GWS Driver",
+  "minNfVersion": "3.9.8-4",
+  "options": [
+    {
+      "name": "baseUrl",
+      "optionType": "TYPE_STRING"
+    },
+    {
+      "name": "token",
+      "optionType": "TYPE_STRING",
+      "secret": true
+    },
+    {
+      "name": "csrf",
+      "optionType": "TYPE_STRING",
+      "secret": true
+    },
+    {
+      "name": "password",
+      "optionType": "TYPE_STRING",
+      "secret": true
+    },
+    {
+      "name": "lcuNums",
+      "optionType": "TYPE_STRING"
+    },
+    {
+      "name": "command",
+      "optionType": "TYPE_STRING"
+    },
+    {
+      "name": "targets",
+      "optionType": "TYPE_STRING"
+    },
+    {
+      "name": "dval",
+      "optionType": "TYPE_STRING"
+    },
+    {
+      "name": "maintain",
+      "optionType": "TYPE_STRING"
+    },
+    {
+      "name": "deadband",
+      "optionType": "TYPE_STRING"
+    }
+  ],
+  "layer": {
+    "name": "hpl:douglas",
+    "indexed": true,
+    "defaultDisplayAttrs": [
+      "areaDescription",
+      "douglas/outputId",
+      "douglas/panel",
+      "douglas/outputType"
+    ],
+    "structuredComponents": [
+      {
+        "name": "areaDescription",
+        "type": "TAG"
+      },
+      {
+        "name": "douglas/outputId",
+        "type": "TAG"
+      },
+      {
+        "name": "douglas/fastId",
+        "type": "TAG"
+      },
+      {
+        "name": "douglas/lcuNum",
+        "type": "TAG"
+      },
+      {
+        "name": "douglas/panel",
+        "type": "TAG"
+      },
+      {
+        "name": "douglas/circuit",
+        "type": "TAG"
+      },
+      {
+        "name": "douglas/outputType",
+        "type": "TAG"
+      },
+      {
+        "name": "douglas/channel",
+        "type": "TAG"
+      },
+      {
+        "name": "douglas/emergency",
+        "type": "TAG"
+      },
+      {
+        "name": "units",
+        "type": "TAG"
+      }
+    ]
+  }
+}

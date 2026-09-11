@@ -1,0 +1,6 @@
+{
+  "id": "a26aab2f-ffee-462f-a554-9a37dc0a3643",
+  "name": "import-points",
+  "entryPoint": "/hooks/import-points.js",
+  "invokeTimeout": "12900s"
+}

@@ -1,0 +1,19 @@
+{
+  "id": "cd02ab09-91f4-4192-98d2-55e5f766f50c",
+  "name": "poll-values",
+  "entryPoint": "/hooks/poll-values.js",
+  "points": {
+    "layer": "hpl:douglas",
+    "query": {
+      "field": {
+        "property": "period",
+        "numeric": { "minValue": 1, "maxInfinity": true }
+      }
+    }
+  },
+  "schedule": {
+    "rrule": "DTSTART:20260101T000000Z\nRRULE:FREQ=MINUTELY;INTERVAL=1"
+  },
+  "mode": "MODE_SCHEDULED",
+  "invokeTimeout": "55s"
+}

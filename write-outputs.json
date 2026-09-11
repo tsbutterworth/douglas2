@@ -1,0 +1,10 @@
+{
+  "id": "d2433f01-91c4-41d1-9ed3-77c64f261b35",
+  "name": "write-outputs",
+  "entryPoint": "/hooks/write-outputs.js",
+  "points": {
+    "layer": "hpl:douglas"
+  },
+  "mode": "MODE_ON_REQUEST",
+  "invokeTimeout": "60s"
+}
