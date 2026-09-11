@@ -1,0 +1,16 @@
+{
+  "name": "app-douglas",
+  "version": "0.1.0",
+  "description": "Normal Framework driver for Douglas Dialog lighting via the Global Web Server JSON endpoint",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "configure": "npx applications-sdk configure",
+    "deploy": "npx applications-sdk deploy"
+  },
+  "dependencies": {
+    "@normalframework/applications-sdk": "0.1.96",
+    "uuid": "^9.0.1"
+  },
+  "license": "ISC"
+}
