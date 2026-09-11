@@ -1,6 +1,0 @@
-{
-  "id": "19169fa1-3ca2-4f68-969c-006c1c394f43",
-  "name": "diagnose",
-  "entryPoint": "/hooks/diagnose.js",
-  "invokeTimeout": "120s"
-}
