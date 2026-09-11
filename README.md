@@ -74,7 +74,13 @@ to treat it as session activation.
 The login page only ever writes `UserPermissionToken`. A `csrf` cookie seen
 next to it in a browser most likely belongs to a different app on the same host
 — in the environment this was captured from, a Niagara station was also on
-`localhost`. `csrf` is an optional config, not a requirement.
+`localhost`. `csrf` is therefore not needed.
+
+`token` and `csrf` were originally exposed as app options, but NF 3.10.7
+rejects a secret option that is left empty — it fails validation with
+"invalid value type for option" and silently drops the option from the stored
+config. Both were removed from the manifest; `GwsClient` still accepts them
+programmatically.
 
 ### Data model
 
@@ -111,9 +117,7 @@ corresponds to **LCU-02** in the dropdown. `lcuLabel()` does the conversion.
 | Option | Notes |
 |---|---|
 | `baseUrl` | e.g. `http://10.x.x.x` (no trailing slash, no `/globalweb`) |
-| `password` | GWS login password. Preferred — the driver logs in and re-auths on its own |
-| `token` | Optional. An existing `UserPermissionToken` if you'd rather not store the password |
-| `csrf` | Optional, probably unnecessary. See Authentication |
+| `password` | GWS login password. The driver logs in and re-auths on its own |
 | `lcuNums` | Comma-separated, zero-based, e.g. `0,1,2` |
 | `command` | `write-outputs` only: `ON`, `OFF` or `DVAL` |
 | `targets` | `write-outputs` only: comma-separated outputIds (`18.1r,11.2r`) or fastIds |
@@ -127,7 +131,6 @@ corresponds to **LCU-02** in the dropdown. `lcuLabel()` does the conversion.
 |---|---|---|
 | `import-points` | Manual / on demand | Discovers outputs and registers points in `hpl:douglas` |
 | `poll-values` | Every 1 minute | One `LoadPartialOutputs` per LCU, fanned out by fastId |
-| `sync-levels` | On data | Pushes dimmer setpoint changes down as `RelayControl DVAL` |
 | `write-outputs` | On request | Sends a batched `RelayControl`, refusing non-writable targets |
 
 ### Trending
@@ -137,7 +140,16 @@ pattern in Normal's own `app-desigocc`. Import the points, then enable trending
 per circuit in the Object Explorer — only those get polled. For a system with a
 lot of Spare circuits this keeps the load on the GWS well down.
 
-### Writable dimmers
+### Writable dimmers (parked)
+
+> **Status:** parked in `parked/`, not installed. The hook definition needs a
+> `groups` / `groupVariables` structure that we could not determine from error
+> messages alone: `groups` is a field of the point-query message, but rejects
+> both an array and a string, so it is a nested message of unknown shape. The
+> protobuf schema (`buf.build/normalframework/nf`) or a grouped hook built in
+> the NF console will settle it. Until then, set levels with `write-outputs`.
+
+
 
 NF has no native write path for a driver-defined layer, so `point.write()` on
 an `hpl:douglas` point would go nowhere. Instead `sync-levels` gives each
@@ -171,6 +183,45 @@ Adjust the rrule in `hooks-update/poll-values.json` if you need faster.
    three hooks appear in the Hooks tab.
 4. Configure `baseUrl`, `password` and `lcuNums`, then invoke `import-points`.
 
+## Runtime notes
+
+### Never pass `sdk.logEvent` as a bare reference
+
+`sdk.logEvent` is a prototype method that calls `this._eventEmitter.emit(...)`
+internally. Storing it as a plain reference —
+
+```js
+const log = sdk.logEvent;        // WRONG
+this.log = logEvent;             // WRONG
+```
+
+— loses `this`, and every call then throws
+
+```
+Cannot read properties of undefined (reading 'emit')
+```
+
+This is worth spelling out because the error is thoroughly misleading. It
+mentions `emit`, so it reads like a stream or socket failure, and it surfaces
+at whatever line happens to log next — which made it look in turn like an axios
+bug, a `fetch` bug, and a sandbox networking restriction. It was none of those.
+Outbound HTTP from the sandbox works fine, via axios, `fetch`, Node's `http`
+module and `sdk.http` alike.
+
+Use `bindLogger(logEvent, sdk)` in `gws.js`, or call `sdk.logEvent(...)`
+directly as a method. Logging is also wrapped in a try/catch so a logging
+failure can never take down real work again.
+
+### Transports
+
+`GwsClient` tries `sdk.http`, then Node's `http`/`https`, then global `fetch`,
+logs which one works and reuses it. All three are functional; the fallback
+chain is belt-and-braces, and the combined error message names each one's
+failure reason if they all fail, which distinguishes a sandbox problem from an
+unreachable GWS.
+
+The only runtime dependencies are the SDK and `uuid`.
+
 ## Repo structure
 
 ```
@@ -183,13 +234,15 @@ app-douglas/
 │   ├── gws.js                   # Shared GWS client and parsing helpers
 │   ├── import-points.js         # Point discovery
 │   ├── poll-values.js           # Value polling
-│   ├── sync-levels.js           # Dimmer setpoints -> lighting system
 │   └── write-outputs.js         # ON / OFF / DVAL commands
 └── hooks-update/
     ├── import-points.json       # Hook registration (manual)
     ├── poll-values.json         # Hook registration (1-min schedule)
-    ├── sync-levels.json         # Hook registration (on data, per-dimmer groups)
     └── write-outputs.json       # Hook registration (on request)
+    
+parked/                          # not installed - see "Writable dimmers"
+├── sync-levels.js
+└── sync-levels.json
 ```
 
 ### Setting a dimmer level
